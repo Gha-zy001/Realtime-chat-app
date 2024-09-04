@@ -5,26 +5,27 @@ namespace App\Events;
 use App\Models\User;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
+// use Illuminate\Broadcasting\ShouldBroadcast;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class PusherBroadcast implements ShouldBroadcast
+class PusherBroadCasts implements ShouldBroadcast
 {
   use Dispatchable, InteractsWithSockets, SerializesModels;
+
   public string $message;
   public User $user;
+  public string $channelName;
 
   /**
    * Create a new event instance.
    */
-  public function __construct(string $message, User $user)
+  public function __construct(string $message, User $user, string $channelName)
   {
     $this->message = $message;
     $this->user = $user;
+    $this->channelName = $channelName;
   }
 
   /**
@@ -32,12 +33,10 @@ class PusherBroadcast implements ShouldBroadcast
    *
    * @return array<int, \Illuminate\Broadcasting\Channel>
    */
-
   public function broadcastOn(): array
   {
-    return ['public'];
+    return [new Channel($this->channelName)];
   }
-
 
   public function broadcastAs(): string
   {

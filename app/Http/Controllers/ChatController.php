@@ -13,7 +13,7 @@ class ChatController extends Controller
 {
   public function index()
   {
-    $users = User::all();
+    $users = User::where('id', '!=', Auth::id())->get();
     $receiver = User::findOrFail(1);
     return view('index', ['authUser' => Auth::user(), 'users' => $users, 'receiver' => $receiver]);
   }
@@ -21,7 +21,7 @@ class ChatController extends Controller
   public function chat($userId)
   {
     $receiver = User::findOrFail($userId);
-    $users = User::all();
+    $users = User::where('id', '!=', Auth::id())->get();
     return view('index', ['authUser' => Auth::user(), 'receiver' => $receiver,'users' => $users]);
   }
 
