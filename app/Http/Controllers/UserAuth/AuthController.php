@@ -19,16 +19,17 @@ class AuthController extends Controller
 
     $user = User::where('email', $request->email)->first();
     if (!$user || !Hash::check($request->password, $user->password)) {
-      return  response()->json('Credentials do not match', 400);
+      return response()->json(['error' => 'Credentials do not match'], 400);
     }
-    $token = $user->createToken('user')->plainTextToken;
-    $user->token = $token;
+    $token = $user->createToken('flutter')->plainTextToken;
     return response()->json([
-      'id' => $user['id'],
-      'name' => $user['name'],
-      'email' => $user['email'],
+      'user' => [
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+      ],
       'token' => $token,
-    ], 200);
+    ]);
   }
 
   public function register(Request $request)
@@ -38,22 +39,29 @@ class AuthController extends Controller
       'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
       'password' => ['required', 'confirmed', Rules\Password::defaults()],
     ]);
+
     $user = User::create([
       'name' => $request->name,
       'email' => $request->email,
       'password' => Hash::make($request->password),
     ]);
 
-    return response()->json("You have successfully registered", 200);
+    $token = $user->createToken('flutter')->plainTextToken;
+
+    return response()->json([
+      'user' => [
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+      ],
+      'token' => $token,
+    ]);
   }
 
   public function logout(Request $request)
   {
     $request->user()->tokens()->delete();
 
-    return response()->json(
-      "You have successfully have been loged out and your token has been deleted",
-      200
-    );
+    return response()->json(['message' => 'Logged out successfully']);
   }
 }

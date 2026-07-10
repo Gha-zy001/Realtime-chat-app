@@ -13,13 +13,20 @@ class ChatController extends Controller
 {
   public function getUsers()
   {
-    $users = User::where('id', '!=', Auth::id())->get();
+    $users = User::where('id', '!=', Auth::id())->get()->map(function ($user) {
+      return [
+        'id' => $user->id,
+        'name' => $user->name,
+        'email' => $user->email,
+        'avatar' => 'https://bootdey.com/img/Content/avatar/avatar7.png',
+      ];
+    });
+
     return response()->json($users);
   }
 
   public function getMessages($userId)
   {
-    // $messages = Message::where('receiver' ,'=', Auth::id())->get();
     $messages = Message::where(function ($query) use ($userId) {
       $query->where('sender', Auth::id())->where('receiver', $userId);
     })->orWhere(function ($query) use ($userId) {
@@ -31,9 +38,14 @@ class ChatController extends Controller
 
   public function sendMessage(Request $request)
   {
+    $request->validate([
+      'receiver' => 'required|exists:users,id',
+      'message' => 'required|string',
+    ]);
+
     $senderId = Auth::id();
-    $receiverId = $request->get('receiver');
-    $messageText = $request->get('message');
+    $receiverId = $request->receiver;
+    $messageText = $request->message;
 
     $message = Message::create([
       'sender' => $senderId,
@@ -47,7 +59,6 @@ class ChatController extends Controller
     broadcast(new PusherBroadCasts($messageText, $user, $channelName))->toOthers();
 
     return response()->json([
-      'status' => 'Message sent successfully!',
       'message' => $message,
     ]);
   }

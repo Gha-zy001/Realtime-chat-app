@@ -3,9 +3,8 @@
 namespace App\Events;
 
 use App\Models\User;
-use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-// use Illuminate\Broadcasting\ShouldBroadcast;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -35,7 +34,7 @@ class PusherBroadCasts implements ShouldBroadcast
    */
   public function broadcastOn(): array
   {
-    return [new Channel($this->channelName)];
+    return [new PrivateChannel($this->channelName)];
   }
 
   public function broadcastAs(): string
@@ -48,6 +47,7 @@ class PusherBroadCasts implements ShouldBroadcast
     return [
       'message' => $this->message,
       'user' => [
+        'id' => $this->user->id,
         'name' => $this->user->name,
       ],
       'timestamp' => now()->toDateTimeString(),
