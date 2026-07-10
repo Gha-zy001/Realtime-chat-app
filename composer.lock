@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7d8dbe6e1f0daa770eac7acb4a3222ce",
+    "content-hash": "0679826dceea50ee38e06ce910bd3b44",
     "packages": [
         {
             "name": "brick/math",
@@ -134,6 +134,57 @@
                 }
             ],
             "time": "2023-12-11T17:09:12+00:00"
+        },
+        {
+            "name": "devgh/api-error-handler",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Gha-zy001/api-error-handler.git",
+                "reference": "b304ce78fe45884bbb37f663b91912ec883c283e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Gha-zy001/api-error-handler/zipball/b304ce78fe45884bbb37f663b91912ec883c283e",
+                "reference": "b304ce78fe45884bbb37f663b91912ec883c283e",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^9.0|^10.0",
+                "illuminate/http": "^9.0|^10.0",
+                "illuminate/log": "^9.0|^10.0",
+                "illuminate/support": "^9.0|^10.0",
+                "php": "^8.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Devgh\\ApiErrorHandler\\Providers\\ApiErrorHandlerServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Devgh\\ApiErrorHandler\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Gha-zy001",
+                    "email": "axxgha.zy01@gmail.com"
+                }
+            ],
+            "description": "Laravel API Error Handler",
+            "support": {
+                "issues": "https://github.com/Gha-zy001/api-error-handler/issues",
+                "source": "https://github.com/Gha-zy001/api-error-handler/tree/v1.0.0"
+            },
+            "time": "2026-06-26T21:26:39+00:00"
         },
         {
             "name": "dflydev/dot-access-data",
@@ -8389,12 +8440,12 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.1"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.9.0"
 }

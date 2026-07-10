@@ -49,6 +49,7 @@ class PusherBroadcast implements ShouldBroadcast
     return [
       'message' => $this->message,
       'user' => [
+        'id' => $this->user->id,
         'name' => $this->user->name,
       ],
       'timestamp' => now()->toDateTimeString(),

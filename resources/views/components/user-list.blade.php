@@ -1,27 +1,14 @@
-<link rel="stylesheet" href="{{asset('style.css')}}">
-<div id="plist" class="people-list">
-    <div class="input-group">
-        <div class="input-group-prepend">
-            <span class="input-group-text"><i class="fa fa-search"></i></span>
+@foreach ($users as $user)
+    <a href="{{ route('chat.user', ['user' => $user->id]) }}" class="user-item {{ isset($receiver) && $receiver->id == $user->id ? 'active' : '' }}" data-user-id="{{ $user->id }}" data-name="{{ $user->name }}">
+        <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar" class="user-avatar">
+        <div class="user-meta">
+            <div class="user-name">{{ $user->name }}</div>
+            <div class="user-preview">
+                <span class="last-msg">{{ $user->name }} joined the chat</span>
+            </div>
         </div>
-        <input type="text" class="form-control" placeholder="Search...">
-    </div>
-    <ul class="list-unstyled chat-list mt-2 mb-0">
-        @foreach ($users as $user)
-            <li class="clearfix {{ $loop->first ? 'active' : '' }}">
-                <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar">
-                <div class="about">
-                    <div class="name">
-                        <a href="{{ route('chat.user', ['user' => $user->id]) }}">
-                            {{ $user->name }}
-                        </a>
-                    </div>
-                    <div class="status">
-                        <i class="fa fa-circle {{ $user['online'] ? 'online' : 'offline' }}"></i>
-                        {{-- {{ $user['status'] }} --}}
-                    </div>
-                </div>
-            </li>
-        @endforeach
-    </ul>
-</div>
+        <div class="user-status">
+            <span class="online-dot {{ $user['online'] ?? false ? 'online' : 'offline' }}"></span>
+        </div>
+    </a>
+@endforeach

@@ -2,46 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Events\ChatSent;
-use App\Events\PusherBroadcast;
-use App\Models\Message;
-use App\Models\User;
+use App\Actions\Chat\BroadcastMessage;
+use App\Actions\Chat\RenderReceived;
+use App\Actions\Chat\ShowChatPage;
+use App\Actions\Chat\ShowUserChat;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ChatController extends Controller
 {
-  public function index()
+  public function index(ShowChatPage $action)
   {
-    $users = User::where('id', '!=', Auth::id())->get();
-    $receiver = User::findOrFail(1);
-    return view('index', ['authUser' => Auth::user(), 'users' => $users, 'receiver' => $receiver]);
+    return $action();
   }
 
-  public function chat($userId)
+  public function chat($userId, ShowUserChat $action)
   {
-    $receiver = User::findOrFail($userId);
-    $users = User::where('id', '!=', Auth::id())->get();
-    return view('index', ['authUser' => Auth::user(), 'receiver' => $receiver,'users' => $users]);
+    return $action($userId);
   }
 
-  public function broadCast(Request $request)
+  public function broadCast(Request $request, BroadcastMessage $action)
   {
-    $senderId = auth()->id();
-    $receiverId = $request->get('receiver_id');
-    $user = Auth::user();
-    broadcast(new PusherBroadcast($request->get('message'),$user))->toOthers();
-    return view('chat.layouts.broadcast', [
-      'message' => $request->get('message'),
-      'user' => $user
-    ]);
+    return $action($request);
   }
 
-  public function receive(Request $request)
+  public function receive(Request $request, RenderReceived $action)
   {
-    return view('chat.layouts.receive', [
-      'message' => $request->get('message'),
-      'user' => Auth::user()
-    ]);
+    return $action($request);
   }
 }

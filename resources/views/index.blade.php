@@ -1,84 +1,111 @@
-<!DOCTYPE html>
-<html lang="en">
+@extends('layouts.chat')
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
-    <link rel="stylesheet" href="{{ asset('chat/style.css') }}">
-</head>
+@section('title', 'Chat App')
 
-<body>
-    <div class="container">
+@section('content')
+    @include('chat._sidebar')
 
-        <div class="row">
-            <!-- User List -->
-            <div class="col-md-4">
-                @include('components.user-list', ['users' => $users])
-            </div>
-            <div class="col-md-8">
-                <div class="chat">
-                    <div class="top">
-                        <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="avatar">
-                        <div>
-                            <p>{{ $receiver->name }}</p>
-                            <small>Online</small>
-                        </div>
-                    </div>
-                    <div class="messages">
-                        @include('chat.layouts.receive', ['message' => 'Hey!'])
-                    </div>
-                    <div class="bottom">
-                        <form action="">
-                            <input type="text" id="message" name="message" placeholder="Enter Message..">
-                            <button type="submit"></button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-</body>
+    <div class="main-chat">
+        @include('chat._chat_area')
+    </div>
+@endsection
+
+@push('scripts')
 <script>
-  const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
-      cluster: 'eu'
-  });
-  const channel = pusher.subscribe('public');
-  channel.bind('chat', function(data) {
-      $.post("/receive", {
-              _token: '{{ csrf_token() }}',
-              message: data.message,
-              user: data.user
-          })
-          .done(function(res) {
-              $(".messages > .message").last().after(res);
-              $(document).scrollTop($(document).height());
-          });
-  });
-  $("form").submit(function(event) {
-      event.preventDefault();
+    Pusher.logToConsole = true;
 
-      $.ajax({
-          url: "/broadcast",
-          method: 'POST',
-          headers: {
-              'X-Socket-Id': pusher.connection.socket_id
-          },
-          data: {
-              _token: '{{ csrf_token() }}',
-              message: $("form #message").val(),
-              user: {
-                  name: '{{ $authUser->name }}',
+    const currentReceiverId = '{{ $receiver ? $receiver->id : null }}';
+    const currentUserId = '{{ $authUser->id }}';
 
-              }
-          }
-      }).done(function(res) {
-          $(".messages > .message").last().after(res);
-          $("form #message").val('');
-          $(document).scrollTop($(document).height());
-      });
-  });
+    const pusher = new Pusher('{{ config('broadcasting.connections.pusher.key') }}', {
+        cluster: 'eu'
+    });
+
+    pusher.connection.bind('connected', function() {
+        console.log('Pusher connected successfully');
+    });
+
+    function updateSidebar(userId, userName, message) {
+        const item = $(`.user-item[data-user-id="${userId}"]`);
+        if (!item.length) return;
+
+        item.find('.last-msg').text(message);
+        item.closest('.user-list-wrapper').prepend(item);
+
+        if (currentReceiverId != userId) {
+            item.addClass('has-new');
+        }
+    }
+
+    $(document).on('click', '.user-item', function() {
+        $('.user-item').removeClass('has-new');
+    });
+
+    const channel = pusher.subscribe('public');
+    channel.bind('chat', function(data) {
+        console.log('Pusher event received:', data);
+        updateSidebar(data.user.id, data.user.name, data.message);
+
+        if (currentReceiverId && data.user.id == currentReceiverId) {
+            $.post("{{ route('receive') }}", {
+                    _token: '{{ csrf_token() }}',
+                    message: data.message,
+                    user: data.user
+                })
+                .done(function(res) {
+                    $(".messages-area").append(res);
+                    scrollToBottom();
+                });
+        }
+    });
+
+    function scrollToBottom() {
+        const area = document.getElementById('messagesArea');
+        if (area) {
+            area.scrollTop = area.scrollHeight;
+        }
+    }
+
+    $("#messageForm").submit(function(event) {
+        event.preventDefault();
+
+        const input = $("#message");
+        const message = input.val().trim();
+        if (!message) return;
+
+        $.ajax({
+            url: "{{ route('broadcast') }}",
+            method: 'POST',
+            headers: {
+                'X-Socket-Id': pusher.connection.socket_id
+            },
+            data: {
+                _token: '{{ csrf_token() }}',
+                message: message,
+                receiver_id: '{{ $receiver ? $receiver->id : 0 }}',
+                user: {
+                    id: '{{ $authUser->id }}',
+                    name: '{{ $authUser->name }}',
+                }
+            }
+        }).done(function(res) {
+            console.log('Message sent successfully');
+            updateSidebar('{{ $authUser->id }}', '{{ $authUser->name }}', message);
+            $(".messages-area").append(res);
+            input.val('');
+            scrollToBottom();
+        }).fail(function(xhr) {
+            console.error('Send failed:', xhr.responseText);
+        });
+    });
+
+    $("#searchUser").on("keyup", function() {
+        const value = this.value.toLowerCase();
+        $(".user-item").each(function() {
+            $(this).toggle($(this).data("name").toLowerCase().includes(value));
+        });
+    });
+
+    scrollToBottom();
 </script>
-</html>
+@endpush

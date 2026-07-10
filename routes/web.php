@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChatController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -15,6 +16,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('auth.register');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::get('/dashboard', [ChatController::class, 'index'])->name('dashboard');
+    Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
+    Route::get('/chat/{user}', [ChatController::class, 'chat'])->name('chat.user');
+    Route::post('/broadcast', [ChatController::class, 'broadCast'])->name('broadcast');
+    Route::post('/receive', [ChatController::class, 'receive'])->name('receive');
 });
 
 require __DIR__.'/auth.php';
